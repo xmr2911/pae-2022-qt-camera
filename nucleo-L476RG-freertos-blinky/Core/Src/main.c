@@ -40,21 +40,34 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+IWDG_HandleTypeDef hiwdg;
+
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart2;
 
 /* Definitions for blink01 */
 osThreadId_t blink01Handle;
 const osThreadAttr_t blink01_attributes = {
   .name = "blink01",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for blink02 */
 osThreadId_t blink02Handle;
 const osThreadAttr_t blink02_attributes = {
   .name = "blink02",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for blink03 */
+osThreadId_t blink03Handle;
+const osThreadAttr_t blink03_attributes = {
+  .name = "blink03",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal1,
 };
 /* USER CODE BEGIN PV */
 
@@ -64,8 +77,12 @@ const osThreadAttr_t blink02_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_IWDG_Init(void);
+static void MX_RTC_Init(void);
 void StartBlink01(void *argument);
 void StartBlink02(void *argument);
+void StartBlink03(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -105,8 +122,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_I2C1_Init();
+  MX_IWDG_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-
+  uint32_t provaa = 2;
+  Write_Flash(CURRENT_STATE_ADDR,&provaa,1);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -134,6 +155,9 @@ int main(void)
 
   /* creation of blink02 */
   blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
+
+  /* creation of blink03 */
+  blink03Handle = osThreadNew(StartBlink03, NULL, &blink03_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -176,9 +200,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
@@ -203,6 +228,116 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x10909CEC;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
+  hiwdg.Init.Window = 4095;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -290,8 +425,10 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	uint32_t prova = 2;
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    osDelay(500);
+	//Write_Flash(CURRENT_STATE_ADDR,&prova,1);
+    osDelay(1000);
   }
   //In case we accidentally exit from task loop
   osThreadTerminate(NULL);
@@ -312,33 +449,35 @@ void StartBlink02(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	  uint32_t prova2 = 4;
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    osDelay(600);
+	Write_Flash(CURRENT_STATE_ADDR,&prova2,1);
+    osDelay(1000);
   }
   //In case we accidentally exit from task loop
    osThreadTerminate(NULL);
   /* USER CODE END StartBlink02 */
 }
 
+/* USER CODE BEGIN Header_StartBlink03 */
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM7 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+* @brief Function implementing the blink03 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartBlink03 */
+void StartBlink03(void *argument)
 {
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM7) {
-    HAL_IncTick();
+  /* USER CODE BEGIN StartBlink03 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  uint32_t prova2 = 4;
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		Write_Flash(CURRENT_STATE_ADDR,&prova2,1);
+	    osDelay(1000);
   }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
+  /* USER CODE END StartBlink03 */
 }
 
 /**
