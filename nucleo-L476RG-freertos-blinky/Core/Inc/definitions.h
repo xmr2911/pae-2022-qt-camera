@@ -20,9 +20,7 @@
 //#include "stm32f4xx_hal_i2c.h"
 //#include "stm32f4xx_hal_uart.h"
 #include <stm32l4xx_hal.h>
-#include "FreeRTOS.h"
-#include "task.h"
-//#include "utils.h"
+#include "utils.h"
 
 
 /*Temperature range operation of STM32L162VE*/

@@ -111,7 +111,7 @@ static uint32_t Get_Bank(uint32_t Addr)
  *                                                                                    *
  **************************************************************************************/
 uint32_t Flash_Write_Data(uint32_t StartSectorAddress, uint8_t *Data,
-		uint16_t numberofbytes) {
+		uint16_t numberofwords) {
 
 	static FLASH_EraseInitTypeDef EraseInitStruct;
 	uint32_t PAGEError;
@@ -123,24 +123,21 @@ uint32_t Flash_Write_Data(uint32_t StartSectorAddress, uint8_t *Data,
 
 	/* Erase the user Flash area */
 
-	/* Get the number of sector to erase from 1st sector */
-	uint32_t StartSector = 0x08008000;
-
 	uint32_t FirstAddr = 0x08008000;
 	uint32_t Addr = FirstAddr;
 	uint32_t N_ADDR = 50;
 	uint32_t LastAddr = FirstAddr+N_ADDR;
-	uint8_t DataSave[PAGESIZE];
+	uint8_t DataSave[N_ADDR];
 	uint8_t i = 0,j=0;
 	while(Addr < LastAddr){
 		/* Verify if Addr is the Address where we want to write */
 		if (Addr == StartSectorAddress){
 			// We add the data array to DataSave
-			while(j<numberofbytes){
+			while(j<numberofwords){
 				DataSave[i] = Data[j];
 				i++;
 				j++;
-				Addr++;
+				Addr += 1;
 			}
 		}else{
 			DataSave[i] = *(__IO uint8_t*)Addr;
@@ -181,12 +178,14 @@ uint32_t Flash_Write_Data(uint32_t StartSectorAddress, uint8_t *Data,
 //			return HAL_FLASH_GetError();
 //		}
 //	}
+	uint64_t ToWrite;
 
 	while (sofar < N_ADDR) {
-		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, FirstAddr,
-				DataSave[sofar]) == HAL_OK) {
+		ToWrite = DataSave[sofar] |(DataSave[sofar+1] << 8) | (DataSave[sofar+2]) << 16 | (DataSave[sofar+3] << 24);
+		ToWrite = DataSave[sofar+4] <<32 | DataSave[sofar+5] << 40 | (DataSave[sofar+6] << 48) || (DataSave[sofar+7] << 56);
+		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, FirstAddr,	DataSave[sofar]) == HAL_OK) {
 			FirstAddr += 8; // use StartPageAddress += 2 for half word and 8 for double word
-			sofar++;
+			sofar+=8;;
 		} else {
 			/* Error occurred while writing data in Flash memory*/
 			return HAL_FLASH_GetError();
@@ -217,10 +216,10 @@ uint32_t Flash_Write_Data(uint32_t StartSectorAddress, uint8_t *Data,
 void Write_Flash(uint32_t StartSectorAddress, uint8_t *Data,
 		uint16_t numberofbytes) {
 	if (StartSectorAddress >= 0x08000000 && StartSectorAddress <= 0x0800BFFF) { //addresses with redundancy
-	// The addresses are separated 0x4000 positions
+		// The addresses are separated 1 PAGE
 		Flash_Write_Data(StartSectorAddress, Data, numberofbytes);
-		Flash_Write_Data(StartSectorAddress + 0x4000, Data, numberofbytes);
-		Flash_Write_Data(StartSectorAddress + 0x8000, Data, numberofbytes);
+		Flash_Write_Data(StartSectorAddress + PAGESIZE, Data, numberofbytes);
+		Flash_Write_Data(StartSectorAddress + PAGESIZE*2, Data, numberofbytes);
 	} else {
 		Flash_Write_Data(StartSectorAddress, Data, numberofbytes);
 	}
@@ -270,8 +269,8 @@ void Flash_Read_Data(uint32_t StartSectorAddress, uint8_t *RxBuf,
 void Check_Redundancy(uint32_t Address, uint8_t *RxDef, uint16_t numberofbytes) {
 	uint8_t lect1[numberofbytes], lect2[numberofbytes], lect3[numberofbytes];
 	Flash_Read_Data(Address, lect1, numberofbytes);
-	Flash_Read_Data(Address + 0x4000, lect2, numberofbytes);
-	Flash_Read_Data(Address + 0x8000, lect3, numberofbytes);
+	Flash_Read_Data(Address + PAGESIZE, lect2, numberofbytes);
+	Flash_Read_Data(Address + PAGESIZE*2, lect3, numberofbytes);
 
 	bool coincidence12 = true, coincidence13 = true, coincidence23 = true;
 	for (int i = 0; i < numberofbytes; i++) {
