@@ -33,9 +33,9 @@ void control_threads(osThreadId_t comms, osThreadId_t adcs) {
 void obc_thread(osThreadId_t COMMSHandle, osThreadId_t ADCSHandle) {
 
 	uint8_t currentState, exit_low, nominal, low, critical;
-	Write_Flash(CURRENT_STATE_ADDR, INIT, 1);
-	Read_Flash(CURRENT_STATE_ADDR, &currentState, sizeof(currentState));
-	Write_Flash(PREVIOUS_STATE_ADDR, CONTINGENCY, 1);
+//	Write_Flash(CURRENT_STATE_ADDR, INIT, 1);
+//	Read_Flash(CURRENT_STATE_ADDR, &currentState, sizeof(currentState));
+//	Write_Flash(PREVIOUS_STATE_ADDR, CONTINGENCY, 1);
 	// Signals related to NOTIFICATIONS
 	uint32_t signal_received = 0;
 	uint32_t signals_to_wait = CONTINGENCY_NOTI | WAKEUP_NOTI | RESET_NOTI
@@ -160,8 +160,7 @@ void obc_thread(osThreadId_t COMMSHandle, osThreadId_t ADCSHandle) {
 			// S'envia cada vegada que rebem un EXITLOWPOWER_NOTI i la bateria no millora
 			osThreadFlagsSet(COMMSHandle, CONTINGENCY_NOTI);
 			// Esperem que COMMS rebi telecommand de la GS (EXITLOWPOWER_NOTI)
-			signal_received = osThreadFlagsSetWait(signals_to_wait,
-			osFlagsWaitAny, 10);
+			signal_received = osThreadFlagsWait(signals_to_wait, osFlagsWaitAny, 10);
 			if (signal_received & EXITLOWPOWER_NOTI) {
 				// Mirem el nivell de bateria
 				// Si ha empitjorat

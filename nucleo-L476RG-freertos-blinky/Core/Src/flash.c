@@ -218,8 +218,8 @@ void Write_Flash(uint32_t StartSectorAddress, uint8_t *Data,
 	if (StartSectorAddress >= 0x08000000 && StartSectorAddress <= 0x0800BFFF) { //addresses with redundancy
 		// The addresses are separated 1 PAGE
 		Flash_Write_Data(StartSectorAddress, Data, numberofbytes);
-		Flash_Write_Data(StartSectorAddress + PAGESIZE, Data, numberofbytes);
-		Flash_Write_Data(StartSectorAddress + PAGESIZE*2, Data, numberofbytes);
+//		Flash_Write_Data(StartSectorAddress + PAGESIZE, Data, numberofbytes);
+//		Flash_Write_Data(StartSectorAddress + PAGESIZE*2, Data, numberofbytes);
 	} else {
 		Flash_Write_Data(StartSectorAddress, Data, numberofbytes);
 	}
