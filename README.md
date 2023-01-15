@@ -5,9 +5,9 @@ inside the FDR there is a detailed exaplantation of every part.
 
 NOTE: This code has been changed from the previous version. Previous FDR ca be useful in order to understand the camera work or for the PCB-Reverse Engineering, but the code has been completely remove from this versions. For code information, use only the most recent FDR (January, 2023)
 
--Download the uart_camerav2.rar
+-Download the uart_camerav2.rar, which is inside this repository
 
--Download STM32 CubeIDE.
+-Download STM32 CubeIDE. Link: https://www.st.com/en/development-tools/stm32cubeide.html .
 
 -Unzip the files. 
 
