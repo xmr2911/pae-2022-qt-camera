@@ -6,7 +6,7 @@ NOTE 1: In order to use the code of the camera, there is a tutorial on the FDR-J
 Inside the code, there is some information about the different parts. If more information is required, 
 inside the FDR there is a detailed exaplantation of every part.
 
-NOTE 2: This code has been changed from the previous version. Previous FDR ca be useful in order to understand different parts of the camera in which have been done during past semesters, which can be beneficial for the PCB-Reverse Engineering. Nevertheless, the code has been completely remove from this versions, as it was not working with STM. For code information, use only the most recent FDR (January, 2023), in which both structure and functioning is explained.
+NOTE 2: This code has been changed from the previous version. Previous FDR can be useful in order to understand different parts of the camera, which can be beneficial for the PCB-Reverse Engineering. Nevertheless, the code has been completely remove from this versions, as it was not working with STM. For code information, use only the most recent FDR (January, 2023), in which both structure and functioning are explained.
 
 In order to start using the camera from this repository, please use the following tutorial:
 
